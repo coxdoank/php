@@ -1,10 +1,12 @@
 <?php
 //koneksi sql server
-$Server	      = "otodaymis01";
+$Server	      = "otomonmis01";
 $Database     = array("Database"=>"SSISDB");
 $connection	  = sqlsrv_connect($Server, $Database);
 
-$Sekarang = '26-01-2021';
+// $Sekarang = '26-01-2021';
+$Sekarang = date("d-m-Y");
+
 $sql = "
 SELECT 
 	e.project_name,

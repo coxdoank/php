@@ -1,38 +1,33 @@
 <?php
 //koneksi sql server
-$Server	      = "otodaymis01";
+$Server	      = "sofdaymis01";
 $Database     = array("Database"=>"SSISDB");
 $connection	  = sqlsrv_connect($Server, $Database);
 
-$Sekarang = '26-01-2021';
+// $Sekarang = '26-01-2021';
+$Sekarang = date("d-m-Y");
+
 $sql = "
 SELECT 
-	e.project_name,
-	e.package_name,
-	e.project_lsn,
-	e.status, 
-	status_desc = CASE e.status 
-						WHEN 1 THEN 'Created'
-						WHEN 2 THEN 'Running'
-						WHEN 3 THEN 'Cancelled'
-						WHEN 4 THEN 'Failed'
-						WHEN 5 THEN 'Pending'
-						WHEN 6 THEN 'Ended Unexpectedly'
-						WHEN 7 THEN 'Succeeded'
-						WHEN 8 THEN 'Stopping'
-						WHEN 9 THEN 'Completed'
-					END,
-	CONVERT(datetime, e.start_time) as start_time,
-	CONVERT(datetime, e.end_time) as end_time,
-	elapsed_time_min = datediff(mi, e.start_time, e.end_time)
-FROM 
-	catalog.executions e 
-WHERE 
-e.project_name LIKE '%' AND
-e.package_name LIKE '%' AND
-e.execution_id = ISNULL(NULL, e.execution_id) 
-AND convert(varchar,e.start_time, 105) = '$Sekarang'
-ORDER BY start_time desc
+execs.project_name, execs.package_name, execs.project_lsn, opers.status,
+status_desc = CASE opers.status 
+			WHEN 1 THEN 'Created'
+			WHEN 2 THEN 'Running'
+			WHEN 3 THEN 'Cancelled'
+			WHEN 4 THEN 'Failed'
+			WHEN 5 THEN 'Pending'
+			WHEN 6 THEN 'Ended Unexpectedly'
+			WHEN 7 THEN 'Succeeded'
+			WHEN 8 THEN 'Stopping'
+			WHEN 9 THEN 'Completed'
+			END,
+opers.start_time, opers.end_time,
+elapsed_time_min = datediff(mi, opers.start_time, opers.end_time)
+FROM internal.executions AS execs INNER JOIN
+internal.operations AS opers ON execs.execution_id = opers.operation_id AND
+convert(varchar,opers.start_time, 105) = '$Sekarang' AND
+execs.project_name = 'RK Project'
+ORDER BY opers.start_time desc
 OPTION
 	(RECOMPILE)
 ";

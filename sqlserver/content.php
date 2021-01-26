@@ -541,7 +541,7 @@ if(empty($row_sofdwh['package_name'])){
           <div class="col-md-6">
             <div class="card">
               <div class="card-header">
-                <h3 class="card-title"><b>Job SOF Daily</b> | <?php echo "Last EOD : ".$row_tblpara_oto; ?></h3> 
+                <h3 class="card-title"><b>Job SOF Daily & Merge</b> | <?php echo "Last EOD : ".$row_tblpara_oto; ?></h3> 
               </div>
               <!-- /.card-header -->
               <div class="card-body">
