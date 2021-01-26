@@ -1,10 +1,11 @@
 <?php
 //koneksi sql server
-$Server	      = "otobi04\sql2019";
+$Server	      = "otodaymis01";
 $Database     = array("Database"=>"SSISDB");
 $connection	  = sqlsrv_connect($Server, $Database);
 
-$query01 = "
+$Sekarang = '26-01-2021';
+$sql = "
 SELECT 
 	e.project_name,
 	e.package_name,
@@ -30,81 +31,27 @@ WHERE
 e.project_name LIKE '%' AND
 e.package_name LIKE '%' AND
 e.execution_id = ISNULL(NULL, e.execution_id) 
---e.end_time = @paradate
-ORDER BY 
-	e.execution_id DESC
+AND convert(varchar,e.start_time, 105) = '$Sekarang'
+ORDER BY start_time desc
 OPTION
 	(RECOMPILE)
 ";
 
-// $stmt01 = sqlsrv_query($connection, $query01);
-// // works  
-// $stmt01 = sqlsrv_query($connection, $query01, array(), array("Scrollable"=>"buffered")); 
-// $count  = sqlsrv_num_rows($stmt01);
-// echo $count;
+$stmt = sqlsrv_query($connection, $sql);
+if($stmt === false){ die(print_r(sqlsrv_errors(), true)); }
 
-$rs01 = sqlsrv_query($connection, $query01);
-	
-$num_columns03 = $rs01->Fields->Count();
-for ($j=0; $j < $num_columns03; $j++) {
-    $fld03[$j] = $rs01->Fields($j);
+// SQLSRV_FETCH_ASSOC - use with field name
+// SQLSRV_FETCH_NUMERIC - use with no 
+
+while( $row = sqlsrv_fetch_array( $stmt, SQLSRV_FETCH_ASSOC) ) {
+	$row5 = date_format($row['start_time'], 'Y-m-d H:i:s');
+	$row6 = date_format($row['end_time'], 'Y-m-d H:i:s');	
+	$insertSQL = "INSERT INTO ssis_job (project_name, package_name, project_lsn, status, status_desc, start_time, end_time, elapsed_time_min) VALUES ('$row[project_name]', '$row[package_name]', '$row[project_lsn]', '$row[status]', '$row[status_desc]', '$row5', '$row6', '$row[elapsed_time_min]')";
+	print_r($insertSQL);
+    $Server01	   = "sofbi01";
+    $Database02    = array("Database"=>"MisMonitor");
+    $connection02  = sqlsrv_connect($Server01, $Database02);
+	$stmt01 	   = sqlsrv_query($connection02, $insertSQL);
+	if($stmt01 === false){ die(print_r(sqlsrv_errors(), true)); }
 }
-// for ($j=0; $j < $count; $j++) {
-    
-//     $row = sqlsrv_fetch_array($stmt01, SQLSRV_FETCH_NUMERIC);
-
-//     $row5 = date_format($row[5], 'Y-m-d');
-//     $row6 = date_format($row[6], 'Y-m-d');        
-//     $insertSQL = "INSERT INTO ssis_job (project_name, package_name, project_lsn, status, status_desc, start_time, end_time, elapsed_time_min) VALUES ('$row[0]', '$row[1]', '$row[2]', '$row[3]', '$row[4]', '$row5', '$row6', '$row[7]')";
-
-//     $Server01	   = "sofbi01";
-//     $Database02    = array("Database"=>"MisMonitor");
-//     $connection02  = sqlsrv_connect($Server01, $Database02);
-//     $stmt01 = sqlsrv_query( $connection02, $insertSQL);    
-
-// }
-    
-// while($row = sqlsrv_fetch_array($stmt01, SQLSRV_FETCH_NUMERIC))  
-// {  
-//     $row5 = date_format($row[5], 'Y-m-d');
-//     $row6 = date_format($row[6], 'Y-m-d');
-//     $insertSQL = "INSERT INTO ssis_job (project_name, package_name, project_lsn, status, status_desc, start_time, end_time, elapsed_time_min) VALUES ('$row[0]', '$row[1]', '$row[2]', '$row[3]', '$row[4]', '$row5', '$row6', '$row[7]')";
-
-//     $Server01	   = "sofbi01";
-//     $Database02    = array("Database"=>"MisMonitor");
-//     $connection02  = sqlsrv_connect($Server01, $Database02);
-//     $stmt01 = sqlsrv_query( $connection02, $insertSQL);    
-
-//     var_dump($insertSQL);
-//      echo $row[0]."\n";  
-//      echo $row[1]."\n";  
-//      echo $row[2]."\n"; 
-//      echo $row[3]."\n"; 
-//      echo $row[4]."\n";   
-//      echo date_format($row[5], 'Y-m-d')."\n";
-//      echo date_format($row[6], 'Y-m-d')."\n";     
-//      echo $row[7]."<br>\n";  
-// }
-
-
-
-// 	while (!feof($num_columns1)) { 
-// 	  $insertSQL = sprintf("INSERT INTO ssis_job (project_name, package_name, project_lsn, status, status_desc, start_time, end_time, elapsed_time_min) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
-// 						   GetSQLValueString($fld10[0]->value, "text"),
-//                            GetSQLValueString($fld10[1]->value, "text"),
-//                            GetSQLValueString($fld10[2]->value, "text"),
-//                            GetSQLValueString($fld10[3]->value, "text"),
-//                            GetSQLValueString($fld10[4]->value, "text"),
-//                            GetSQLValueString($fld10[5]->value, "datetime"),
-//                            GetSQLValueString($fld10[6]->value, "datetime"),
-//                            GetSQLValueString($fld10[7]->value, "int")
-//                         );
-    
-// $stmt01 = sqlsrv_query( $connection02, $insertSQL);                     
-// $rs1->MoveNext(); 
-// }
-// 	  mysql_select_db($database_ITSMMS, $con);
-// 	  $Result2 = mysqli_query($insertSQL, $con) or die(mysqli_error());
-// 	  $rs1->MoveNext(); 
-// 	};
 ?>
